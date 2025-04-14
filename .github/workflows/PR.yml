@@ -26,7 +26,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter
+          args: --release --out dist -i 3.10
           manylinux: ${{ matrix.platform.manylinux }}
       - name: pytest
         shell: bash
