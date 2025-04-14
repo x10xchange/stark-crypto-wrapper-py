@@ -415,7 +415,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "fast-stark-crypto"
+name = "fast-stark-crypto-starknet"
 version = "0.1.0"
 dependencies = [
  "cc",
