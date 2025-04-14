@@ -10,7 +10,8 @@ crate-type = ["cdylib"]
 [dependencies]
 malachite = "0.4.16"
 pyo3 = "0.20.2"
-starknet-crypto = "0.6.1"
+starknet = { git = "https://github.com/xJonathanLEI/starknet-rs" }
+starknet-crypto = "0.7.4"
 
 [build-dependencies]
 cc = { version = "1" }
