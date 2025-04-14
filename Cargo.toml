@@ -1,6 +1,6 @@
 [package]
 name = "fast-stark-crypto"
-version = "0.1.0-starknet"
+version = "0.0.1-prerelease+starknet"
 edition = "2021"
 
 [lib]
