@@ -1,4 +1,3 @@
-use malachite::{num::conversion::traits::FromStringBase, strings::ToLowerHexString, Integer};
 use pyo3::prelude::*;
 use pyo3::types::PyModule;
 use starknet_crypto::{
@@ -6,8 +5,56 @@ use starknet_crypto::{
 };
 use starknet_messages::{AssetId, OffChainMessage, Order, PositionId, StarknetDomain, Timestamp};
 
-mod messages;
+use hex;
+use num_bigint::BigUint;
+use sha2::{Digest, Sha256};
+use std::str::FromStr;
+
 mod starknet_messages;
+
+fn grind_key(key_seed: BigUint) -> BigUint {
+    let two_256 = BigUint::from_str(
+        "115792089237316195423570985008687907853269984665640564039457584007913129639936",
+    )
+    .unwrap();
+    let key_value_limit = BigUint::from_str(
+        "3618502788666131213697322783095070105526743751716087489154079457884512865583",
+    )
+    .unwrap();
+
+    let max_allowed_value = two_256.clone() - (two_256.clone() % (&key_value_limit));
+    let mut index = BigUint::ZERO;
+    loop {
+        let hash_input = {
+            let mut input = Vec::new();
+            input.extend_from_slice(&key_seed.to_bytes_be());
+            input.extend_from_slice(&index.to_bytes_be());
+            input
+        };
+        let hash_result = Sha256::digest(&hash_input);
+        let hash = hash_result.as_slice();
+        let key = BigUint::from_bytes_be(&hash);
+
+        if key < max_allowed_value {
+            return key % (&key_value_limit);
+        }
+
+        index += BigUint::from_str("1").unwrap();
+    }
+}
+
+fn get_private_key_from_eth_signature(signature: &str) -> Result<Felt, String> {
+    let eth_sig_truncated = signature.trim_start_matches("0x");
+    if eth_sig_truncated.len() < 64 {
+        return Err("Invalid signature length".to_string());
+    }
+    let r = &eth_sig_truncated[..64];
+    let r_bytes = hex::decode(r).map_err(|e| format!("Failed to decode r as hex: {:?}", e))?;
+    let r_int = BigUint::from_bytes_be(&r_bytes);
+
+    let ground_key = grind_key(r_int);
+    return Ok(Felt::from_hex(&ground_key.to_str_radix(16)).unwrap());
+}
 
 // Converts a hexadecimal string to a FieldElement
 fn str_to_field_element(hex_str: &str) -> Result<Felt, String> {
@@ -17,10 +64,6 @@ fn str_to_field_element(hex_str: &str) -> Result<Felt, String> {
             hex_str, e
         )
     })
-}
-
-fn int_to_field_element(int: &Integer) -> Result<Felt, String> {
-    str_to_field_element(&int.to_lower_hex_string())
 }
 
 #[pyfunction]
@@ -154,6 +197,21 @@ fn rs_get_order_msg(
     })
 }
 
+#[pyfunction]
+fn rs_generate_keypair_from_eth_signature(
+    py: Python,
+    signature: String,
+) -> PyResult<(String, String)> {
+    return get_private_key_from_eth_signature(&signature)
+        .and_then(|private_key| {
+            let public_key = fetch_public_key(&private_key);
+            let private_key_hex = private_key.to_hex_string();
+            let public_key_hex = public_key.to_hex_string();
+            Ok((private_key_hex, public_key_hex))
+        })
+        .map_err(PyErr::new::<pyo3::exceptions::PyValueError, _>);
+}
+
 #[pymodule]
 fn fast_stark_crypto(py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rs_get_public_key, m)?)?;
@@ -161,6 +219,7 @@ fn fast_stark_crypto(py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rs_sign_message, m)?)?;
     m.add_function(wrap_pyfunction!(rs_verify_signature, m)?)?;
     m.add_function(wrap_pyfunction!(rs_get_order_msg, m)?)?;
+    m.add_function(wrap_pyfunction!(rs_generate_keypair_from_eth_signature, m)?)?;
     Ok(())
 }
 

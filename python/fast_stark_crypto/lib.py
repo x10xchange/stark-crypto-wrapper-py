@@ -4,6 +4,7 @@ from fast_stark_crypto.fast_stark_crypto import (
     rs_sign_message,
     rs_verify_signature,
     rs_get_order_msg,
+    rs_generate_keypair_from_eth_signature,
 )
 
 
@@ -22,6 +23,13 @@ def sign(private_key: int, msg_hash: int, k: int) -> tuple[int, int]:
 
 def verify(public_key: int, msg_hash: int, r: int, s: int) -> bool:
     return rs_verify_signature(hex(public_key), hex(msg_hash), hex(r), hex(s))
+
+
+def generate_keypair_from_eth_signature(
+    eth_signature: str,
+) -> tuple[int, int]:
+    (priv, pub) = rs_generate_keypair_from_eth_signature(eth_signature)
+    return (int(priv, 16), int(pub, 16))
 
 
 def get_order_msg_hash(
