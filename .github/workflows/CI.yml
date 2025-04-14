@@ -50,21 +50,21 @@ jobs:
           pip install fast-stark-crypto --find-links dist --force-reinstall
           pip install pytest
           pytest
-          - name: pytest
-          if: ${{ startsWith(matrix.platform.target, 'aarch64') }}
-          uses: uraimo/run-on-arch-action@v2
-          with:
-            arch: ${{ matrix.platform.target }}
-            distro: ubuntu22.04
-            githubToken: ${{ github.token }}
-            install: |
-              apt-get update
-              apt-get install -y --no-install-recommends python3 python3-pip
-              pip3 install -U pip pytest
-            run: |
-              set -e
-              pip3 install fast-stark-crypto --find-links dist --force-reinstall
-              pytest
+      - name: pytest
+        if: ${{ startsWith(matrix.platform.target, 'aarch64') }}
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: ${{ matrix.platform.target }}
+          distro: ubuntu22.04
+          githubToken: ${{ github.token }}
+          install: |
+            apt-get update
+            apt-get install -y --no-install-recommends python3 python3-pip
+            pip3 install -U pip pytest
+          run: |
+            set -e
+            pip3 install fast-stark-crypto --find-links dist --force-reinstall
+            pytest
 
   musllinux:
     runs-on: ${{ matrix.platform.runner }}
