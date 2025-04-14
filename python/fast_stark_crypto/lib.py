@@ -56,5 +56,6 @@ def get_order_msg_hash(
             domain_version,
             domain_chain_id,
             domain_revision,
-        )
+        ),
+        16,
     )
