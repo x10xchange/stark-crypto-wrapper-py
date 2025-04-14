@@ -17,8 +17,8 @@ python-source = "python"
 features = ["pyo3/extension-module"]
 
 [tool.poetry]
-name = "fast-stark-crypto-starknet"
-version = "0.1.0"
+name = "fast-stark-crypto"
+version = "0.1.0-starknet"
 description = "wrapped starkware rust crypto functions"
 authors = ["x10"]
 license = "MIT"
