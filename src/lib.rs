@@ -1,60 +1,19 @@
 use pyo3::prelude::*;
 use pyo3::types::PyModule;
-use starknet_crypto::{
-    get_public_key as fetch_public_key, pedersen_hash, sign, verify as verify_signature, Felt,
-};
-use starknet_messages::{AssetId, OffChainMessage, Order, PositionId, StarknetDomain, Timestamp};
 
-use hex;
-use num_bigint::BigUint;
-use sha2::{Digest, Sha256};
-use std::str::FromStr;
+use rust_crypto_lib_base::get_private_key_from_eth_signature;
+use rust_crypto_lib_base::starknet_messages::Order;
+use rust_crypto_lib_base::starknet_messages::PositionId;
+use rust_crypto_lib_base::starknet_messages::AssetId;
+use rust_crypto_lib_base::starknet_messages::StarknetDomain;
+use rust_crypto_lib_base::starknet_messages::Timestamp;
+use rust_crypto_lib_base::starknet_messages::OffChainMessage;
+use starknet_crypto::sign;
+use starknet_crypto::Felt;
+use starknet_crypto::pedersen_hash;
+use starknet_crypto::get_public_key as fetch_public_key;
+use starknet_crypto::verify as verify_signature;
 
-mod starknet_messages;
-
-fn grind_key(key_seed: BigUint) -> BigUint {
-    let two_256 = BigUint::from_str(
-        "115792089237316195423570985008687907853269984665640564039457584007913129639936",
-    )
-    .unwrap();
-    let key_value_limit = BigUint::from_str(
-        "3618502788666131213697322783095070105526743751716087489154079457884512865583",
-    )
-    .unwrap();
-
-    let max_allowed_value = two_256.clone() - (two_256.clone() % (&key_value_limit));
-    let mut index = BigUint::ZERO;
-    loop {
-        let hash_input = {
-            let mut input = Vec::new();
-            input.extend_from_slice(&key_seed.to_bytes_be());
-            input.extend_from_slice(&index.to_bytes_be());
-            input
-        };
-        let hash_result = Sha256::digest(&hash_input);
-        let hash = hash_result.as_slice();
-        let key = BigUint::from_bytes_be(&hash);
-
-        if key < max_allowed_value {
-            return key % (&key_value_limit);
-        }
-
-        index += BigUint::from_str("1").unwrap();
-    }
-}
-
-fn get_private_key_from_eth_signature(signature: &str) -> Result<Felt, String> {
-    let eth_sig_truncated = signature.trim_start_matches("0x");
-    if eth_sig_truncated.len() < 64 {
-        return Err("Invalid signature length".to_string());
-    }
-    let r = &eth_sig_truncated[..64];
-    let r_bytes = hex::decode(r).map_err(|e| format!("Failed to decode r as hex: {:?}", e))?;
-    let r_int = BigUint::from_bytes_be(&r_bytes);
-
-    let ground_key = grind_key(r_int);
-    return Ok(Felt::from_hex(&ground_key.to_str_radix(16)).unwrap());
-}
 
 // Converts a hexadecimal string to a FieldElement
 fn str_to_field_element(hex_str: &str) -> Result<Felt, String> {

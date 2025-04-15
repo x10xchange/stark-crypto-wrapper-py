@@ -419,12 +419,9 @@ name = "fast-stark-crypto"
 version = "0.3.0-alpha"
 dependencies = [
  "cc",
- "hex",
- "num-bigint",
  "pyo3",
  "pyo3-build-config",
- "sha2",
- "starknet",
+ "rust-crypto-lib-base",
  "starknet-crypto 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -966,6 +963,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "lazy_static"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
+
+[[package]]
 name = "libc"
 version = "0.2.171"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1392,6 +1395,19 @@ checksum = "bb919243f34364b6bd2fc10ef797edbfa75f33c252e7998527479c6d6b47e1ec"
 dependencies = [
  "bytes",
  "rustc-hex",
+]
+
+[[package]]
+name = "rust-crypto-lib-base"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "lazy_static",
+ "num-bigint",
+ "serde_json",
+ "sha2",
+ "starknet",
+ "starknet-crypto 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

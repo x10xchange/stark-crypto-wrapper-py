@@ -21,7 +21,10 @@ jobs:
             manylinux: auto
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout from GitHub
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
