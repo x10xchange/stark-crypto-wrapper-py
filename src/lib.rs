@@ -209,7 +209,7 @@ fn rs_get_order_msg(
 
 #[pyfunction]
 fn rs_generate_keypair_from_eth_signature(
-    py: Python,
+    _py: Python,
     signature: String,
 ) -> PyResult<(String, String)> {
     return get_private_key_from_eth_signature(&signature)
@@ -223,7 +223,7 @@ fn rs_generate_keypair_from_eth_signature(
 }
 
 #[pymodule]
-fn fast_stark_crypto(py: Python<'_>, m: &PyModule) -> PyResult<()> {
+fn fast_stark_crypto(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rs_get_public_key, m)?)?;
     m.add_function(wrap_pyfunction!(rs_compute_pedersen_hash, m)?)?;
     m.add_function(wrap_pyfunction!(rs_sign_message, m)?)?;
