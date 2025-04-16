@@ -234,9 +234,14 @@ jobs:
       attestations: write
     steps:
       - uses: actions/download-artifact@v4
+        with: 
+          path: dist/
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
         with:
-          subject-path: 'wheels-*/*'
+          subject-path: 'dist/wheels-*/*'
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+         skip-existing: true
+         
