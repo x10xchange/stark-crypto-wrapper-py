@@ -26,7 +26,10 @@ jobs:
             manylinux: "2_24"
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout from GitHub
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
@@ -79,7 +82,10 @@ jobs:
             target: aarch64
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout from GitHub
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
@@ -136,7 +142,10 @@ jobs:
             target: x64
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout from GitHub
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
@@ -197,7 +206,10 @@ jobs:
   sdist:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout from GitHub
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
@@ -223,10 +235,5 @@ jobs:
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: 'wheels-*/*'
-      - name: Publish to PyPI
-        uses: PyO3/maturin-action@v1
-        env:
-          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        with:
-          command: upload
-          args: --non-interactive --skip-existing wheels-*/*
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
