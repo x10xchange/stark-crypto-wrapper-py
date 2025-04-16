@@ -4,6 +4,7 @@ from fast_stark_crypto.fast_stark_crypto import (
     rs_sign_message,
     rs_verify_signature,
     rs_get_order_msg,
+    rs_get_transfer_msg,
     rs_generate_keypair_from_eth_signature,
 )
 
@@ -57,6 +58,37 @@ def get_order_msg_hash(
             str(quote_amount),
             hex(fee_asset_id),
             str(fee_amount),
+            str(expiration),
+            str(salt),
+            hex(user_public_key),
+            domain_name,
+            domain_version,
+            domain_chain_id,
+            domain_revision,
+        ),
+        16,
+    )
+
+
+def get_transfer_msg_hash(
+    recipient_position_id: int,
+    sender_position_id: int,
+    collateral_id: int,
+    amount: int,
+    expiration: int,
+    salt: int,
+    user_public_key: int,
+    domain_name: str,
+    domain_version: str,
+    domain_chain_id: str,
+    domain_revision: str,
+) -> int:
+    return int(
+        rs_get_transfer_msg(
+            str(recipient_position_id),
+            str(sender_position_id),
+            hex(collateral_id),
+            str(amount),
             str(expiration),
             str(salt),
             hex(user_public_key),

@@ -2,18 +2,18 @@ use pyo3::prelude::*;
 use pyo3::types::PyModule;
 
 use rust_crypto_lib_base::get_private_key_from_eth_signature;
+use rust_crypto_lib_base::starknet_messages::AssetId;
+use rust_crypto_lib_base::starknet_messages::OffChainMessage;
 use rust_crypto_lib_base::starknet_messages::Order;
 use rust_crypto_lib_base::starknet_messages::PositionId;
-use rust_crypto_lib_base::starknet_messages::AssetId;
 use rust_crypto_lib_base::starknet_messages::StarknetDomain;
 use rust_crypto_lib_base::starknet_messages::Timestamp;
-use rust_crypto_lib_base::starknet_messages::OffChainMessage;
-use starknet_crypto::sign;
-use starknet_crypto::Felt;
-use starknet_crypto::pedersen_hash;
+use rust_crypto_lib_base::starknet_messages::TransferArgs;
 use starknet_crypto::get_public_key as fetch_public_key;
+use starknet_crypto::pedersen_hash;
+use starknet_crypto::sign;
 use starknet_crypto::verify as verify_signature;
-
+use starknet_crypto::Felt;
 
 // Converts a hexadecimal string to a FieldElement
 fn str_to_field_element(hex_str: &str) -> Result<Felt, String> {
@@ -89,6 +89,57 @@ fn rs_verify_signature(
                 })
             })
             .map_err(PyErr::new::<pyo3::exceptions::PyValueError, _>)
+    })
+}
+
+#[pyfunction]
+fn rs_get_transfer_msg(
+    py: Python,
+    recipient_position_id: String,
+    sender_position_id: String,
+    collateral_id_hex: String,
+    amount: String,
+    expiration: String,
+    salt: String,
+    user_public_key_hex: String,
+
+    domain_name: String,
+    domain_version: String,
+    domain_chain_id: String,
+    domain_revision: String,
+) -> PyResult<String> {
+    py.allow_threads(move || {
+        // hex fields
+        let collateral_id = Felt::from_hex(&collateral_id_hex).unwrap();
+        let user_key = Felt::from_hex(&user_public_key_hex).unwrap();
+
+        // decimal fields
+        let recipient = u32::from_str_radix(&recipient_position_id, 10).unwrap();
+        let position_id = u32::from_str_radix(&sender_position_id, 10).unwrap();
+        let amount = u64::from_str_radix(&amount, 10).unwrap();
+        let expiration = u64::from_str_radix(&expiration, 10).unwrap();
+        let salt = Felt::from_hex(&salt).unwrap();
+
+        let transfer_args = TransferArgs {
+            recipient: PositionId { value: recipient },
+            position_id: PositionId { value: position_id },
+            collateral_id: AssetId {
+                value: collateral_id,
+            },
+            amount,
+            expiration: Timestamp {
+                seconds: expiration,
+            },
+            salt,
+        };
+        let domain = StarknetDomain {
+            name: domain_name,
+            version: domain_version,
+            chain_id: domain_chain_id,
+            revision: domain_revision,
+        };
+        let message = transfer_args.message_hash(&domain, user_key).unwrap();
+        Ok(message.to_hex_string())
     })
 }
 
@@ -178,6 +229,7 @@ fn fast_stark_crypto(py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rs_sign_message, m)?)?;
     m.add_function(wrap_pyfunction!(rs_verify_signature, m)?)?;
     m.add_function(wrap_pyfunction!(rs_get_order_msg, m)?)?;
+    m.add_function(wrap_pyfunction!(rs_get_transfer_msg, m)?)?;
     m.add_function(wrap_pyfunction!(rs_generate_keypair_from_eth_signature, m)?)?;
     Ok(())
 }
@@ -239,6 +291,57 @@ mod tests {
             assert_eq!(
                 result,
                 "0x62428944e2c935c4c6662ec0328abfcab44dd6455cb48845c78d18f0ea0450b"
+            );
+        });
+    }
+
+    #[test]
+    fn test_rs_get_transfer_msg() {
+        pyo3::prepare_freethreaded_python();
+        Python::with_gil(|py| {
+            let module = PyModule::new(py, "fast_stark_crypto").unwrap();
+            fast_stark_crypto(py, module).unwrap();
+
+            let recipient_position_id = "1".to_string();
+            let sender_position_id = "2".to_string();
+            let collateral_id_hex = "0x3".to_string();
+            let amount = "4".to_string();
+            let expiration = "5".to_string();
+            let salt = "6".to_string();
+            let user_public_key_hex = "0x5d05989e9302dcebc74e241001e3e3ac3f4402ccf2f8e6f74b034b07ad6a904".to_string();
+
+            let domain_name = "Perpetuals".to_string();
+            let domain_version = "v0".to_string();
+            let domain_chain_id = "SN_SEPOLIA".to_string();
+            let domain_revision = "1".to_string();
+
+            let result: String = module
+                .getattr("rs_get_transfer_msg")
+                .unwrap()
+                .call1(PyTuple::new(
+                    py,
+                    [
+                        recipient_position_id,
+                        sender_position_id,
+                        collateral_id_hex,
+                        amount,
+                        expiration,
+                        salt,
+                        user_public_key_hex,
+                        domain_name,
+                        domain_version,
+                        domain_chain_id,
+                        domain_revision,
+                    ],
+                ))
+                .unwrap()
+                .extract()
+                .unwrap();
+
+            assert_eq!(
+                result,
+                "0x7aa1685adb674d8d350526dfa3011ab9d126c5844b8dbe343e2765d680311d5",
+                "Hashes do not match for TransferArgs"
             );
         });
     }
