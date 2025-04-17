@@ -118,7 +118,7 @@ fn rs_get_transfer_msg(
         let position_id = u32::from_str_radix(&sender_position_id, 10).unwrap();
         let amount = u64::from_str_radix(&amount, 10).unwrap();
         let expiration = u64::from_str_radix(&expiration, 10).unwrap();
-        let salt = Felt::from_hex(&salt).unwrap();
+        let salt = Felt::from_dec_str(&salt).unwrap();
 
         let transfer_args = TransferArgs {
             recipient: PositionId { value: recipient },
@@ -308,7 +308,8 @@ mod tests {
             let amount = "4".to_string();
             let expiration = "5".to_string();
             let salt = "6".to_string();
-            let user_public_key_hex = "0x5d05989e9302dcebc74e241001e3e3ac3f4402ccf2f8e6f74b034b07ad6a904".to_string();
+            let user_public_key_hex =
+                "0x5d05989e9302dcebc74e241001e3e3ac3f4402ccf2f8e6f74b034b07ad6a904".to_string();
 
             let domain_name = "Perpetuals".to_string();
             let domain_version = "v0".to_string();
@@ -339,8 +340,7 @@ mod tests {
                 .unwrap();
 
             assert_eq!(
-                result,
-                "0x7aa1685adb674d8d350526dfa3011ab9d126c5844b8dbe343e2765d680311d5",
+                result, "0x7aa1685adb674d8d350526dfa3011ab9d126c5844b8dbe343e2765d680311d5",
                 "Hashes do not match for TransferArgs"
             );
         });
