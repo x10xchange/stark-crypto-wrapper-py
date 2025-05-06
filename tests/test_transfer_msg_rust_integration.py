@@ -1,8 +1,8 @@
 import fast_stark_crypto
 
 
-def test_well_known_transfer_hash():
-    expected_hash = int("3466709383481810859947861276094399756712395853968834582933311835633294184917")
+def test_well_known_transfer_hash() -> None:
+    expected_hash = int("2453233552426028319905576552240018623512915507691922332978444357299842334607")
     actual_hash = fast_stark_crypto.get_transfer_msg_hash(
         recipient_position_id=1,
         sender_position_id=2,

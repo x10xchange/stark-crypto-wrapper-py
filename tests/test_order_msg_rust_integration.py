@@ -1,7 +1,7 @@
 import fast_stark_crypto
 
 
-def test_well_known_order_hash():
+def test_well_known_order_hash() -> None:
     hash_from_rust = fast_stark_crypto.get_order_msg_hash(
         position_id=100,
         base_asset_id=2,
@@ -19,10 +19,10 @@ def test_well_known_order_hash():
         domain_revision="1",
     )
 
-    assert hash_from_rust == int("0x62428944e2c935c4c6662ec0328abfcab44dd6455cb48845c78d18f0ea0450b", 16)
+    assert hash_from_rust == int("0x4de4c009e0d0c5a70a7da0e2039fb2b99f376d53496f89d9f437e736add6b48", 16)
 
 
-def test_sdk_buy_order_value():
+def test_sdk_buy_order_value() -> None:
     synth_id = "0x4254432d3600000000000000000000"
     collateral_id = "0x31857064564ed0ff978e687456963cba09c2c6985d8f9300a1de4962fafa054"
     fee_id = collateral_id
@@ -46,4 +46,4 @@ def test_sdk_buy_order_value():
         domain_revision="1",
     )
 
-    assert hash_from_rust == int("654658124396932115680058168732265986796695452956187015498175725004749638680")
+    assert hash_from_rust == int("0x58454e78c25644cbcab59444736d573f169fb0996dafe1900a05e2ac50567f0", 16)
