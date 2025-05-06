@@ -136,7 +136,7 @@ fn rs_get_transfer_msg(
             name: domain_name,
             version: domain_version,
             chain_id: domain_chain_id,
-            revision: domain_revision,
+            revision: u32::from_str_radix(&domain_revision, 10).unwrap(),
         };
         let message = transfer_args.message_hash(&domain, user_key).unwrap();
         Ok(message.to_hex_string())
@@ -200,7 +200,7 @@ fn rs_get_order_msg(
             name: domain_name,
             version: domain_version,
             chain_id: domain_chain_id,
-            revision: domain_revision,
+            revision: u32::from_str_radix(&domain_revision, 10).unwrap(),
         };
         let message = order.message_hash(&domain, user_key).unwrap();
         Ok(message.to_hex_string())
@@ -290,7 +290,7 @@ mod tests {
 
             assert_eq!(
                 result,
-                "0x62428944e2c935c4c6662ec0328abfcab44dd6455cb48845c78d18f0ea0450b"
+                "0x4de4c009e0d0c5a70a7da0e2039fb2b99f376d53496f89d9f437e736add6b48"
             );
         });
     }
@@ -340,7 +340,7 @@ mod tests {
                 .unwrap();
 
             assert_eq!(
-                result, "0x7aa1685adb674d8d350526dfa3011ab9d126c5844b8dbe343e2765d680311d5",
+                result, "0x56c7b21d13b79a33d7700dda20e22246c25e89818249504148174f527fc3f8f",
                 "Hashes do not match for TransferArgs"
             );
         });
