@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyModule;
 
 use rust_crypto_lib_base::get_private_key_from_eth_signature;
+use rust_crypto_lib_base::sign_message;
 use rust_crypto_lib_base::starknet_messages::AssetId;
 use rust_crypto_lib_base::starknet_messages::OffChainMessage;
 use rust_crypto_lib_base::starknet_messages::Order;
@@ -11,7 +12,6 @@ use rust_crypto_lib_base::starknet_messages::Timestamp;
 use rust_crypto_lib_base::starknet_messages::TransferArgs;
 use starknet_crypto::get_public_key as fetch_public_key;
 use starknet_crypto::pedersen_hash;
-use starknet_crypto::sign;
 use starknet_crypto::verify as verify_signature;
 use starknet_crypto::Felt;
 
@@ -52,17 +52,14 @@ fn rs_sign_message(
     py: Python,
     priv_key_hex: String,
     msg_hash_hex: String,
-    k_hex: String,
 ) -> PyResult<(String, String)> {
     py.allow_threads(move || {
         str_to_field_element(&priv_key_hex)
             .and_then(|priv_key| {
                 str_to_field_element(&msg_hash_hex).and_then(|msg_hash| {
-                    str_to_field_element(&k_hex).and_then(|k| {
-                        sign(&priv_key, &msg_hash, &k)
-                            .map(|signature| (signature.r.to_string(), signature.s.to_string()))
-                            .map_err(|e| format!("Signing operation failed: {}", e))
-                    })
+                    sign_message(&msg_hash, &priv_key)
+                        .map(|signature| (signature.r.to_string(), signature.s.to_string()))
+                        .map_err(|e| format!("Signing operation failed: {}", e))
                 })
             })
             .map_err(PyErr::new::<pyo3::exceptions::PyValueError, _>)
