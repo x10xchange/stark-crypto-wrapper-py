@@ -6,7 +6,7 @@ from fast_stark_crypto.fast_stark_crypto import (
     rs_get_order_msg,
     rs_get_transfer_msg,
     rs_generate_keypair_from_eth_signature,
-    rs_get_withdrawal_msg,
+    rs_get_withdrawal_hash,
 )
 
 
@@ -116,7 +116,7 @@ def get_withdrawal_msg_hash(
     domain_revision: str,
 ) -> int:
     return int(
-        rs_get_withdrawal_msg(
+        rs_get_withdrawal_hash(
             recipient_hex,
             str(position_id),
             hex(collateral_id),
