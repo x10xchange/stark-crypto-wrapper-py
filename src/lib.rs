@@ -2,7 +2,9 @@ use pyo3::prelude::*;
 use pyo3::types::PyModule;
 
 use rust_crypto_lib_base::get_private_key_from_eth_signature;
+use rust_crypto_lib_base::get_withdrawal_hash;
 use rust_crypto_lib_base::sign_message;
+
 use rust_crypto_lib_base::starknet_messages::AssetId;
 use rust_crypto_lib_base::starknet_messages::OffChainMessage;
 use rust_crypto_lib_base::starknet_messages::Order;
@@ -160,48 +162,129 @@ fn rs_get_order_msg(
     domain_revision: String,
 ) -> PyResult<String> {
     py.allow_threads(move || {
-        //hex fields
-        let base_asset_id = Felt::from_hex(&base_asset_id_hex).unwrap();
-        let quote_asset_id = Felt::from_hex(&quote_asset_id_hex).unwrap();
-        let fee_asset_id = Felt::from_hex(&fee_asset_id_hex).unwrap();
-        let user_key = Felt::from_hex(&user_public_key_hex).unwrap();
+        // Convert hex fields
+        let base_asset_id = Felt::from_hex(&base_asset_id_hex).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Invalid base_asset_id_hex: {}",
+                e
+            ))
+        })?;
+        let quote_asset_id = Felt::from_hex(&quote_asset_id_hex).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Invalid quote_asset_id_hex: {}",
+                e
+            ))
+        })?;
+        let fee_asset_id = Felt::from_hex(&fee_asset_id_hex).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Invalid fee_asset_id_hex: {}",
+                e
+            ))
+        })?;
+        let user_key = Felt::from_hex(&user_public_key_hex).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Invalid user_public_key_hex: {}",
+                e
+            ))
+        })?;
 
-        //decimal fields
-        let position_id = u32::from_str_radix(&position_id, 10).unwrap();
-        let base_amount = i64::from_str_radix(&base_amount, 10).unwrap();
-        let quote_amount = i64::from_str_radix(&quote_amount, 10).unwrap();
-        let fee_amount = u64::from_str_radix(&fee_amount, 10).unwrap();
-        let expiration = u64::from_str_radix(&expiration, 10).unwrap();
-        let salt = u64::from_str_radix(&salt, 10).unwrap();
+        // Convert decimal fields
+        let position_id = u32::from_str_radix(&position_id, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid position_id: {}", e))
+        })?;
+        let base_amount = i64::from_str_radix(&base_amount, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid base_amount: {}", e))
+        })?;
+        let quote_amount = i64::from_str_radix(&quote_amount, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid quote_amount: {}", e))
+        })?;
+        let fee_amount = u64::from_str_radix(&fee_amount, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid fee_amount: {}", e))
+        })?;
+        let expiration = u64::from_str_radix(&expiration, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid expiration: {}", e))
+        })?;
+        let salt = u64::from_str_radix(&salt, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid salt: {}", e))
+        })?;
 
+        // Construct order and domain
         let order = Order {
             position_id: PositionId { value: position_id },
             base_asset_id: AssetId {
                 value: base_asset_id,
             },
-            base_amount: base_amount,
+            base_amount,
             quote_asset_id: AssetId {
                 value: quote_asset_id,
             },
-            quote_amount: quote_amount,
+            quote_amount,
             fee_asset_id: AssetId {
                 value: fee_asset_id,
             },
-            fee_amount: fee_amount,
+            fee_amount,
             expiration: Timestamp {
                 seconds: expiration,
             },
-            salt: salt.try_into().unwrap(),
+            salt: salt.try_into().map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                    "Invalid salt conversion: {}",
+                    e
+                ))
+            })?,
         };
         let domain = StarknetDomain {
             name: domain_name,
             version: domain_version,
             chain_id: domain_chain_id,
-            revision: u32::from_str_radix(&domain_revision, 10).unwrap(),
+            revision: u32::from_str_radix(&domain_revision, 10).map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                    "Invalid domain_revision: {}",
+                    e
+                ))
+            })?,
         };
-        let message = order.message_hash(&domain, user_key).unwrap();
+
+        // Compute message hash
+        let message = order.message_hash(&domain, user_key).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Failed to compute message hash: {}",
+                e
+            ))
+        })?;
         Ok(message.to_hex_string())
     })
+}
+
+#[pyfunction]
+fn rs_get_withdrawal_hash(
+    recipient_hex: String,
+    position_id: String,
+    collateral_id_hex: String,
+    amount: String,
+    expiration: String,
+    salt: String,
+    user_public_key_hex: String,
+    domain_name: String,
+    domain_version: String,
+    domain_chain_id: String,
+    domain_revision: String,
+) -> String {
+    return get_withdrawal_hash(
+        recipient_hex,
+        position_id,
+        collateral_id_hex,
+        amount,
+        expiration,
+        salt,
+        user_public_key_hex,
+        domain_name,
+        domain_version,
+        domain_chain_id,
+        domain_revision,
+    )
+    .unwrap()
+    .to_hex_string();
 }
 
 #[pyfunction]

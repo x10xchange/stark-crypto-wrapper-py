@@ -416,7 +416,7 @@ dependencies = [
 
 [[package]]
 name = "fast-stark-crypto"
-version = "0.3.4-alpha"
+version = "0.3.5-alpha"
 dependencies = [
  "cc",
  "pyo3",
