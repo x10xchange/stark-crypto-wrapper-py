@@ -311,6 +311,7 @@ fn fast_stark_crypto(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rs_get_order_msg, m)?)?;
     m.add_function(wrap_pyfunction!(rs_get_transfer_msg, m)?)?;
     m.add_function(wrap_pyfunction!(rs_generate_keypair_from_eth_signature, m)?)?;
+    m.add_function(wrap_pyfunction!(rs_get_withdrawal_hash, m)?)?;
     Ok(())
 }
 

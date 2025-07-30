@@ -6,6 +6,7 @@ from fast_stark_crypto.fast_stark_crypto import (
     rs_get_order_msg,
     rs_get_transfer_msg,
     rs_generate_keypair_from_eth_signature,
+    rs_get_withdrawal_msg,
 )
 
 
@@ -16,6 +17,7 @@ def get_public_key(private_key: int) -> int:
 def pedersen_hash(first: int, second: int) -> int:
     return int(rs_compute_pedersen_hash(hex(first), hex(second)))
 
+
 def sign(private_key: int, msg_hash: int) -> tuple[int, int]:
     (r, s) = rs_sign_message(hex(private_key), hex(msg_hash))
     return (int(r), int(s))
@@ -23,6 +25,7 @@ def sign(private_key: int, msg_hash: int) -> tuple[int, int]:
 
 def verify(public_key: int, msg_hash: int, r: int, s: int) -> bool:
     return bool(rs_verify_signature(hex(public_key), hex(msg_hash), hex(r), hex(s)) == True)
+
 
 def generate_keypair_from_eth_signature(
     eth_signature: str,
@@ -85,6 +88,37 @@ def get_transfer_msg_hash(
         rs_get_transfer_msg(
             str(recipient_position_id),
             str(sender_position_id),
+            hex(collateral_id),
+            str(amount),
+            str(expiration),
+            str(salt),
+            hex(user_public_key),
+            domain_name,
+            domain_version,
+            domain_chain_id,
+            domain_revision,
+        ),
+        16,
+    )
+
+
+def get_withdrawal_msg_hash(
+    recipient_hex: str,
+    position_id: int,
+    collateral_id: int,
+    amount: int,
+    expiration: int,
+    salt: int,
+    user_public_key: int,
+    domain_name: str,
+    domain_version: str,
+    domain_chain_id: str,
+    domain_revision: str,
+) -> int:
+    return int(
+        rs_get_withdrawal_msg(
+            recipient_hex,
+            str(position_id),
             hex(collateral_id),
             str(amount),
             str(expiration),
