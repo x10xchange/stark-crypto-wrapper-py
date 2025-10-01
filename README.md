@@ -17,6 +17,6 @@ TODO
 
 ## Building from source
 
-- `poetry install` to install dependencies
-- `maturin develop` to build and install the package in your current environment
-- `pytest` to run tests
+- `poetry install` -- install dependencies
+- `maturin develop` -- build and install the package in your current environment
+- `pytest` -- run tests
