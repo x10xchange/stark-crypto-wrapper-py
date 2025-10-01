@@ -14,4 +14,4 @@ starknet-crypto = "0.8.1"
 
 [build-dependencies]
 cc = { version = "1" }
-pyo3-build-config = { version = "^0.20" }
+pyo3-build-config = { version = "0.20.2" }
