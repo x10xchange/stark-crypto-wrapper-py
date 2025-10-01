@@ -14,3 +14,9 @@ The Stark Crypto Wrapper is a powerful library that provides a convenient interf
 ## Installation
 
 TODO
+
+## Building from source
+
+- `poetry install` to install dependencies
+- `maturin develop` to build and install the package in your current environment
+- `pytest` to run tests
