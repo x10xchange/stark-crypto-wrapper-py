@@ -8,10 +8,10 @@ name = "fast_stark_crypto"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = "0.20.2"
+pyo3 = { version = "0.22.6", features = ["gil-refs"] }
 rust-crypto-lib-base = { version = "0.1.0", path = "./rust-crypto-lib-base" }
 starknet-crypto = "0.8.1"
 
 [build-dependencies]
 cc = "1.2.39"
-pyo3-build-config = "0.20.2"
+pyo3-build-config = "0.22.6"
