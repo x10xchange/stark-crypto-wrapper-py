@@ -190,7 +190,7 @@ jobs:
       - name: pytest
         run: |
           ls -al
-          la -al ./dist
+          ls -al ./dist
 
           set -e
           python3 -m venv .venv
