@@ -189,6 +189,9 @@ jobs:
           path: dist
       - name: pytest
         run: |
+          ls -al
+          la -al ./dist
+
           set -e
           python3 -m venv .venv
           source .venv/bin/activate
