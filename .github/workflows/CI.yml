@@ -48,10 +48,10 @@ jobs:
         shell: bash
         run: |
           set -e
-          python${{ pytest_python_version }} -m venv .venv
+          python${{ inputs.pytest_python_version }} -m venv .venv
           source .venv/bin/activate
-          pip${{ pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
-          pip${{ pytest_python_version }} install pytest
+          pip${{ inputs.pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
+          pip${{ inputs.pytest_python_version }} install pytest
           pytest
       - name: pytest
         if: ${{ startsWith(matrix.platform.target, 'aarch64') }}
@@ -62,11 +62,11 @@ jobs:
           githubToken: ${{ github.token }}
           install: |
             apt-get update
-            apt-get install -y --no-install-recommends python${{ pytest_python_version }} python3-pip
-            pip${{ pytest_python_version }} install -U pip${{ pytest_python_version }} pytest
+            apt-get install -y --no-install-recommends python${{ inputs.pytest_python_version }} python3-pip
+            pip${{ inputs.pytest_python_version }} install -U pip${{ inputs.pytest_python_version }} pytest
           run: |
             set -e
-            pip${{ pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
+            pip${{ inputs.pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
             pytest
 
   musllinux:
@@ -106,11 +106,11 @@ jobs:
           options: -v ${{ github.workspace }}:/io -w /io
           run: |
             set -e
-            apk add py3-pip${{ pytest_python_version }} py3-virtualenv
-            python${{ pytest_python_version }} -m virtualenv .venv
+            apk add py3-pip${{ inputs.pytest_python_version }} py3-virtualenv
+            python${{ inputs.pytest_python_version }} -m virtualenv .venv
             source .venv/bin/activate
-            pip${{ pytest_python_version }} install fast-stark-crypto --no-index --no-index --find-links dist --force-reinstall
-            pip${{ pytest_python_version }} install pytest
+            pip${{ inputs.pytest_python_version }} install fast-stark-crypto --no-index --no-index --find-links dist --force-reinstall
+            pip${{ inputs.pytest_python_version }} install pytest
             pytest
       - name: pytest
         if: ${{ startsWith(matrix.platform.target, 'aarch64') }}
@@ -123,10 +123,10 @@ jobs:
             apk add py3-virtualenv
           run: |
             set -e
-            python${{ pytest_python_version }} -m virtualenv .venv
+            python${{ inputs.pytest_python_version }} -m virtualenv .venv
             source .venv/bin/activate
-            pip${{ pytest_python_version }} install pytest
-            pip${{ pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
+            pip${{ inputs.pytest_python_version }} install pytest
+            pip${{ inputs.pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
             pytest
 
   windows:
@@ -160,10 +160,10 @@ jobs:
         shell: bash
         run: |
           set -e
-          python${{ pytest_python_version }} -m venv .venv
+          python${{ inputs.pytest_python_version }} -m venv .venv
           source .venv/Scripts/activate
-          pip${{ pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
-          pip${{ pytest_python_version }} install pytest
+          pip${{ inputs.pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
+          pip${{ inputs.pytest_python_version }} install pytest
           pytest
 
   macos:
@@ -195,10 +195,10 @@ jobs:
       - name: pytest
         run: |
           set -e
-          python${{ pytest_python_version }} -m venv .venv
+          python${{ inputs.pytest_python_version }} -m venv .venv
           source .venv/bin/activate
-          pip${{ pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
-          pip${{ pytest_python_version }} install pytest
+          pip${{ inputs.pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
+          pip${{ inputs.pytest_python_version }} install pytest
           pytest
 
   sdist:
