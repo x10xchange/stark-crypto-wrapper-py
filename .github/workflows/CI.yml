@@ -2,11 +2,6 @@ name: Build, Test, and Release
 
 on:
   workflow_dispatch:
-    inputs:
-      pytest_python_version:
-        description: 'Python version for tests'
-        required: false
-        default: 3.13
 
 permissions:
   contents: read
@@ -30,7 +25,7 @@ jobs:
           submodules: 'true'
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.x
+          python-version: '>=3.9 <3.14'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -48,10 +43,10 @@ jobs:
         shell: bash
         run: |
           set -e
-          python${{ inputs.pytest_python_version }} -m venv .venv
+          python3 -m venv .venv
           source .venv/bin/activate
-          pip${{ inputs.pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
-          pip${{ inputs.pytest_python_version }} install pytest
+          pip install fast-stark-crypto --no-index --find-links dist --force-reinstall
+          pip install pytest
           pytest
       - name: pytest
         if: ${{ startsWith(matrix.platform.target, 'aarch64') }}
@@ -62,11 +57,11 @@ jobs:
           githubToken: ${{ github.token }}
           install: |
             apt-get update
-            apt-get install -y --no-install-recommends python${{ inputs.pytest_python_version }} python3-pip
-            pip${{ inputs.pytest_python_version }} install -U pip${{ inputs.pytest_python_version }} pytest
+            apt-get install -y --no-install-recommends python3 python3-pip
+            pip3 install -U pip pytest
           run: |
             set -e
-            pip${{ inputs.pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
+            pip3 install fast-stark-crypto --no-index --find-links dist --force-reinstall
             pytest
 
   musllinux:
@@ -85,7 +80,7 @@ jobs:
           submodules: 'true'
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.x
+          python-version: '>=3.9 <3.14'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -106,11 +101,11 @@ jobs:
           options: -v ${{ github.workspace }}:/io -w /io
           run: |
             set -e
-            apk add py3-pip${{ inputs.pytest_python_version }} py3-virtualenv
-            python${{ inputs.pytest_python_version }} -m virtualenv .venv
+            apk add py3-pip py3-virtualenv
+            python3 -m virtualenv .venv
             source .venv/bin/activate
-            pip${{ inputs.pytest_python_version }} install fast-stark-crypto --no-index --no-index --find-links dist --force-reinstall
-            pip${{ inputs.pytest_python_version }} install pytest
+            pip install fast-stark-crypto --no-index --no-index --find-links dist --force-reinstall
+            pip install pytest
             pytest
       - name: pytest
         if: ${{ startsWith(matrix.platform.target, 'aarch64') }}
@@ -123,10 +118,10 @@ jobs:
             apk add py3-virtualenv
           run: |
             set -e
-            python${{ inputs.pytest_python_version }} -m virtualenv .venv
+            python3 -m virtualenv .venv
             source .venv/bin/activate
-            pip${{ inputs.pytest_python_version }} install pytest
-            pip${{ inputs.pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
+            pip install pytest
+            pip install fast-stark-crypto --no-index --find-links dist --force-reinstall
             pytest
 
   windows:
@@ -143,7 +138,7 @@ jobs:
           submodules: 'true'
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.x
+          python-version: '>=3.9 <3.14'
           architecture: ${{ matrix.platform.target }}
       - name: Build wheels
         uses: PyO3/maturin-action@v1
@@ -160,10 +155,10 @@ jobs:
         shell: bash
         run: |
           set -e
-          python${{ inputs.pytest_python_version }} -m venv .venv
+          python3 -m venv .venv
           source .venv/Scripts/activate
-          pip${{ inputs.pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
-          pip${{ inputs.pytest_python_version }} install pytest
+          pip install fast-stark-crypto --no-index --find-links dist --force-reinstall
+          pip install pytest
           pytest
 
   macos:
@@ -180,7 +175,7 @@ jobs:
           submodules: 'true'
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.x
+          python-version: '>=3.9 <3.14'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -195,10 +190,10 @@ jobs:
       - name: pytest
         run: |
           set -e
-          python${{ inputs.pytest_python_version }} -m venv .venv
+          python3 -m venv .venv
           source .venv/bin/activate
-          pip${{ inputs.pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
-          pip${{ inputs.pytest_python_version }} install pytest
+          pip install fast-stark-crypto --no-index --find-links dist --force-reinstall
+          pip install pytest
           pytest
 
   sdist:
@@ -240,4 +235,4 @@ jobs:
 #      - name: Publish package distributions to PyPI
 #        uses: pypa/gh-action-pypi-publish@release/v1
 #        with:
-#         skip-existing: true
+#          skip-existing: true
