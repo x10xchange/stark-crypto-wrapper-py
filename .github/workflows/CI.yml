@@ -48,10 +48,10 @@ jobs:
         shell: bash
         run: |
           set -e
-          python3.13 -m venv .venv
+          python${{ pytest_python_version }} -m venv .venv
           source .venv/bin/activate
-          pip3.13 install fast-stark-crypto --no-index --find-links dist --force-reinstall
-          pip3.13 install pytest
+          pip${{ pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
+          pip${{ pytest_python_version }} install pytest
           pytest
       - name: pytest
         if: ${{ startsWith(matrix.platform.target, 'aarch64') }}
@@ -62,11 +62,11 @@ jobs:
           githubToken: ${{ github.token }}
           install: |
             apt-get update
-            apt-get install -y --no-install-recommends python3.13 python3-pip
-            pip3.13 install -U pip3.13 pytest
+            apt-get install -y --no-install-recommends python${{ pytest_python_version }} python3-pip
+            pip${{ pytest_python_version }} install -U pip${{ pytest_python_version }} pytest
           run: |
             set -e
-            pip3.13 install fast-stark-crypto --no-index --find-links dist --force-reinstall
+            pip${{ pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
             pytest
 
   musllinux:
@@ -106,11 +106,11 @@ jobs:
           options: -v ${{ github.workspace }}:/io -w /io
           run: |
             set -e
-            apk add py3-pip3.13 py3-virtualenv
-            python3.13 -m virtualenv .venv
+            apk add py3-pip${{ pytest_python_version }} py3-virtualenv
+            python${{ pytest_python_version }} -m virtualenv .venv
             source .venv/bin/activate
-            pip3.13 install fast-stark-crypto --no-index --no-index --find-links dist --force-reinstall
-            pip3.13 install pytest
+            pip${{ pytest_python_version }} install fast-stark-crypto --no-index --no-index --find-links dist --force-reinstall
+            pip${{ pytest_python_version }} install pytest
             pytest
       - name: pytest
         if: ${{ startsWith(matrix.platform.target, 'aarch64') }}
@@ -123,10 +123,10 @@ jobs:
             apk add py3-virtualenv
           run: |
             set -e
-            python3.13 -m virtualenv .venv
+            python${{ pytest_python_version }} -m virtualenv .venv
             source .venv/bin/activate
-            pip3.13 install pytest
-            pip3.13 install fast-stark-crypto --no-index --find-links dist --force-reinstall
+            pip${{ pytest_python_version }} install pytest
+            pip${{ pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
             pytest
 
   windows:
@@ -160,10 +160,10 @@ jobs:
         shell: bash
         run: |
           set -e
-          python3.13 -m venv .venv
+          python${{ pytest_python_version }} -m venv .venv
           source .venv/Scripts/activate
-          pip3.13 install fast-stark-crypto --no-index --find-links dist --force-reinstall
-          pip3.13 install pytest
+          pip${{ pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
+          pip${{ pytest_python_version }} install pytest
           pytest
 
   macos:
@@ -197,8 +197,8 @@ jobs:
           set -e
           python${{ pytest_python_version }} -m venv .venv
           source .venv/bin/activate
-          pip3.13 install fast-stark-crypto --no-index --find-links dist --force-reinstall
-          pip3.13 install pytest
+          pip${{ pytest_python_version }} install fast-stark-crypto --no-index --find-links dist --force-reinstall
+          pip${{ pytest_python_version }} install pytest
           pytest
 
   sdist:
