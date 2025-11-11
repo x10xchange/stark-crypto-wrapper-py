@@ -196,8 +196,8 @@ jobs:
           python3 -m venv .venv
           source .venv/bin/activate
           # pip install fast-stark-crypto --no-index --find-links ./dist --force-reinstall
-          pip install ./dist/*cp313*.whl --no-index --force-reinstall
-          pip install pytest
+          pip3 install ./dist/*cp313*.whl --no-index --force-reinstall
+          pip3 install pytest
           pytest
 
 #  sdist:
