@@ -257,6 +257,117 @@ fn rs_get_order_msg(
 }
 
 #[pyfunction]
+fn rs_get_limit_order_msg(
+    py: Python,
+    source_position_id: String,
+    receive_position_id: String,
+    base_asset_id_hex: String,
+    base_amount: String,
+    quote_asset_id_hex: String,
+    quote_amount: String,
+    fee_asset_id_hex: String,
+    fee_amount: String,
+    expiration: String,
+    salt: String,
+    user_public_key_hex: String,
+    domain_name: String,
+    domain_version: String,
+    domain_chain_id: String,
+    domain_revision: String,
+) -> PyResult<String> {
+    py.allow_threads(move || {
+        // Convert hex fields
+        let base_asset_id = Felt::from_hex(&base_asset_id_hex).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Invalid base_asset_id_hex: {}",
+                e
+            ))
+        })?;
+        let quote_asset_id = Felt::from_hex(&quote_asset_id_hex).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Invalid quote_asset_id_hex: {}",
+                e
+            ))
+        })?;
+        let fee_asset_id = Felt::from_hex(&fee_asset_id_hex).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Invalid fee_asset_id_hex: {}",
+                e
+            ))
+        })?;
+        let user_key = Felt::from_hex(&user_public_key_hex).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Invalid user_public_key_hex: {}",
+                e
+            ))
+        })?;
+
+        // Convert decimal fields
+        let source_position_id = u32::from_str_radix(&source_position_id, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid source_position_id: {}", e))
+        })?;
+        let receive_position_id = u32::from_str_radix(&receive_position_id, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid receive_position_id: {}", e))
+        })?;
+        let base_amount = i64::from_str_radix(&base_amount, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid base_amount: {}", e))
+        })?;
+        let quote_amount = i64::from_str_radix(&quote_amount, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid quote_amount: {}", e))
+        })?;
+        let fee_amount = u64::from_str_radix(&fee_amount, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid fee_amount: {}", e))
+        })?;
+        let expiration = u64::from_str_radix(&expiration, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid expiration: {}", e))
+        })?;
+        let salt = u64::from_str_radix(&salt, 10).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("Invalid salt: {}", e))
+        })?;
+
+        // Construct limit order and domain
+        let limit_order = rust_crypto_lib_base::starknet_messages::LimitOrder {
+            source_position: PositionId { value: source_position_id },
+            receive_position: PositionId { value: receive_position_id },
+            base_asset_id: AssetId { value: base_asset_id },
+            base_amount,
+            quote_asset_id: AssetId { value: quote_asset_id },
+            quote_amount,
+            fee_asset_id: AssetId { value: fee_asset_id },
+            fee_amount,
+            expiration: Timestamp { seconds: expiration },
+            salt: salt.try_into().map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                    "Invalid salt conversion: {}",
+                    e
+                ))
+            })?,
+        };
+        let domain = StarknetDomain {
+            name: domain_name,
+            version: domain_version,
+            chain_id: domain_chain_id,
+            revision: u32::from_str_radix(&domain_revision, 10).map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                    "Invalid domain_revision: {}",
+                    e
+                ))
+            })?,
+        };
+
+        // Compute message hash
+        let message = limit_order.message_hash(&domain, user_key).map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                "Failed to compute message hash: {}",
+                e
+            ))
+        })?;
+        Ok(message.to_hex_string())
+    })
+}
+
+
+#[pyfunction]
 fn rs_get_withdrawal_hash(
     recipient_hex: String,
     position_id: String,
@@ -310,6 +421,7 @@ fn fast_stark_crypto(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rs_verify_signature, m)?)?;
     m.add_function(wrap_pyfunction!(rs_get_order_msg, m)?)?;
     m.add_function(wrap_pyfunction!(rs_get_transfer_msg, m)?)?;
+    m.add_function(wrap_pyfunction!(rs_get_limit_order_msg, m)?)?;
     m.add_function(wrap_pyfunction!(rs_generate_keypair_from_eth_signature, m)?)?;
     m.add_function(wrap_pyfunction!(rs_get_withdrawal_hash, m)?)?;
     Ok(())
